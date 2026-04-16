@@ -17,17 +17,21 @@ Replace this paragraph with your own summary of what your version does.
 
 ## How The System Works
 
-Explain your design in plain language.
+Real world recommenders like Spotify and YouTube analyze massive amounts of user behavior and audio data using machine learning to create perdictions. My version keeps uses a content-based approach that compares song features  directly against a user's stated preferences, scores each song with a weighted formula, and returns the top matches. (genre, mood, energy, acousticness)
 
-Some prompts to answer:
+- **Song features used:** genre, mood, energy, tempo_bpm, valence, danceability, and acousticness — loaded from `data/songs.csv` (18 songs across 14 genres)
+- **UserProfile stores:** `favorite_genre`, `favorite_mood`, `target_energy`, and `likes_acoustic`
+- **Scoring:** each song is scored against the user profile using four weighted rules:
+  - Genre match (weight 3.0) — strongest signal for "what kind of music"
+  - Mood match (weight 2.0) — refines the vibe
+  - Energy fit (weight 1.5) — `1 - |song.energy - target_energy|`
+  - Acoustic fit (weight 1.0) — tiebreaker for texture preference
+  - Max possible score: 7.5
+- **Ranking:** sort all songs by score descending, return the top k (default 5) with explanations
 
-- What features does each `Song` use in your system
-  - For example: genre, mood, energy, tempo
-- What information does your `UserProfile` store
-- How does your `Recommender` compute a score for each song
-- How do you choose which songs to recommend
+- **Potential biases:** Genre match carries the heaviest weight (3.0), so the system strongly favors songs in the user's stated genre and may rarely surface songs from other genres that the user might enjoy. The catalog itself is small (18 songs) and was hand-curated, meaning underrepresented genres get fewer chances to appear in results. Additionally, genre and mood are scored as exact string matches — "indie pop" and "pop" are treated as completely different, even though they overlap in practice.
 
-You can include a simple diagram or bullet list if helpful.
+See [docs/dataflow.md](docs/dataflow.md) for a Mermaid.js flowchart of the full pipeline.
 
 ---
 
@@ -52,6 +56,52 @@ pip install -r requirements.txt
 
 ```bash
 python -m src.main
+```
+
+### Sample Output
+
+```
+==================================================
+       Top 5 Recommendations
+==================================================
+
+  #1  Rooftop Lights by Indigo Parade
+       Score: 7.06 / 7.50
+       Reasons:
+         - genre is indie pop (exact match, +3.0)
+         - mood is happy (exact match, +2.0)
+         - energy 0.76 vs target 0.70 (+1.41)
+         - acousticness 0.35 (+0.65)
+--------------------------------------------------
+
+  #2  Sunrise City by Neon Echo
+       Score: 4.14 / 7.50
+       Reasons:
+         - mood is happy (exact match, +2.0)
+         - energy 0.82 vs target 0.70 (+1.32)
+         - acousticness 0.18 (+0.82)
+--------------------------------------------------
+
+  #3  Night Drive Loop by Neon Echo
+       Score: 2.21 / 7.50
+       Reasons:
+         - energy 0.75 vs target 0.70 (+1.42)
+         - acousticness 0.22 (+0.78)
+--------------------------------------------------
+
+  #4  Binary Sunset by Glitch Throne
+       Score: 2.15 / 7.50
+       Reasons:
+         - energy 0.88 vs target 0.70 (+1.23)
+         - acousticness 0.08 (+0.92)
+--------------------------------------------------
+
+  #5  Concrete Jungle by Raw Signal
+       Score: 2.12 / 7.50
+       Reasons:
+         - energy 0.87 vs target 0.70 (+1.24)
+         - acousticness 0.12 (+0.88)
+--------------------------------------------------
 ```
 
 ### Running Tests
