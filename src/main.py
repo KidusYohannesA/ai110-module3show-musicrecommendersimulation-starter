@@ -18,30 +18,45 @@ from src.recommender import load_songs, recommend_songs
 def main() -> None:
     songs = load_songs("data/songs.csv") 
 
-    # User taste profile — defines what the recommender compares each song against
-    # Chosen to sit in the middle of the feature space so the scoring formula
-    # must genuinely differentiate between candidates (e.g., "Rooftop Lights"
-    # should rank above "Storm Runner," but "Storm Runner" shouldn't score zero).
-    user_prefs = {
-        "favorite_genre": "indie pop",   # matches Rooftop Lights; overlaps with pop
-        "favorite_mood": "happy",        # separates upbeat tracks from chill/intense
-        "target_energy": 0.70,           # mid-high — rewards both pop and rock partially
-        "likes_acoustic": False,         # prefers produced/electronic textures
-    }
+    user_profiles = [
+        {
+            "name": "High-Energy Pop Fan",
+            "favorite_genre": "pop",
+            "favorite_mood": "happy",
+            "target_energy": 0.90,
+            "likes_acoustic": False,
+        },
+        {
+            "name": "Chill Lofi Listener",
+            "favorite_genre": "lofi",
+            "favorite_mood": "chill",
+            "target_energy": 0.40,
+            "likes_acoustic": True,
+        },
+        {
+            "name": "Deep Intense Rocker",
+            "favorite_genre": "rock",
+            "favorite_mood": "intense",
+            "target_energy": 0.85,
+            "likes_acoustic": False,
+        },
+    ]
 
-    recommendations = recommend_songs(user_prefs, songs, k=5)
+    for profile in user_profiles:
+        name = profile.pop("name")
+        recommendations = recommend_songs(profile, songs, k=5)
 
-    print("\n" + "=" * 50)
-    print("       Top 5 Recommendations")
-    print("=" * 50)
+        print("\n" + "=" * 50)
+        print(f"  Profile: {name}")
+        print("=" * 50)
 
-    for rank, (song, score, reasons) in enumerate(recommendations, start=1):
-        print(f"\n  #{rank}  {song['title']} by {song['artist']}")
-        print(f"       Score: {score:.2f} / 7.50")
-        print("       Reasons:")
-        for reason in reasons:
-            print(f"         - {reason}")
-        print("-" * 50)
+        for rank, (song, score, reasons) in enumerate(recommendations, start=1):
+            print(f"\n  #{rank}  {song['title']} by {song['artist']}")
+            print(f"       Score: {score:.2f} / 7.50")
+            print("       Reasons:")
+            for reason in reasons:
+                print(f"         - {reason}")
+            print("-" * 50)
 
 
 if __name__ == "__main__":

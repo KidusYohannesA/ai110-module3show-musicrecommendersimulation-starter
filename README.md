@@ -104,6 +104,74 @@ python -m src.main
 --------------------------------------------------
 ```
 
+### Edge-Case Output
+
+```
+==================================================
+  Profile: High-Energy Pop Fan
+==================================================
+
+  #1  Sunrise City by Neon Echo
+       Score: 7.20 / 7.50
+       Reasons:
+         - genre is pop (exact match, +3.0)
+         - mood is happy (exact match, +2.0)
+         - energy 0.82 vs target 0.90 (+1.38)
+         - acousticness 0.18 (+0.82)
+--------------------------------------------------
+
+  #2  Gym Hero by Max Pulse
+       Score: 5.41 / 7.50
+       Reasons:
+         - genre is pop (exact match, +3.0)
+         - energy 0.93 vs target 0.90 (+1.46)
+         - acousticness 0.05 (+0.95)
+--------------------------------------------------
+
+==================================================
+  Profile: Chill Lofi Listener
+==================================================
+
+  #1  Library Rain by Paper Lanterns
+       Score: 7.29 / 7.50
+       Reasons:
+         - genre is lofi (exact match, +3.0)
+         - mood is chill (exact match, +2.0)
+         - energy 0.35 vs target 0.40 (+1.42)
+         - acousticness 0.86 (+0.86)
+--------------------------------------------------
+
+  #2  Midnight Coding by LoRoom
+       Score: 7.18 / 7.50
+       Reasons:
+         - genre is lofi (exact match, +3.0)
+         - mood is chill (exact match, +2.0)
+         - energy 0.42 vs target 0.40 (+1.47)
+         - acousticness 0.71 (+0.71)
+--------------------------------------------------
+
+==================================================
+  Profile: Deep Intense Rocker
+==================================================
+
+  #1  Storm Runner by Voltline
+       Score: 7.31 / 7.50
+       Reasons:
+         - genre is rock (exact match, +3.0)
+         - mood is intense (exact match, +2.0)
+         - energy 0.91 vs target 0.85 (+1.41)
+         - acousticness 0.10 (+0.90)
+--------------------------------------------------
+
+  #2  Gym Hero by Max Pulse
+       Score: 4.33 / 7.50
+       Reasons:
+         - mood is intense (exact match, +2.0)
+         - energy 0.93 vs target 0.85 (+1.38)
+         - acousticness 0.05 (+0.95)
+--------------------------------------------------
+```
+
 ### Running Tests
 
 Run the starter tests with:
@@ -118,11 +186,77 @@ You can add more tests in `tests/test_recommender.py`.
 
 ## Experiments You Tried
 
-Use this section to document the experiments you ran. For example:
+### Adversarial / Edge-Case Profiles
 
-- What happened when you changed the weight on genre from 2.0 to 0.5
-- What happened when you added tempo or valence to the score
-- How did your system behave for different types of users
+We tested profiles designed to expose weaknesses in the scoring logic:
+
+```
+==================================================
+  Profile: Ghost Genre (k-pop)
+==================================================
+
+  #1  Sunrise City by Neon Echo
+       Score: 4.29 / 7.50
+       Reasons:
+         - mood is happy (exact match, +2.0)
+         - energy 0.82 vs target 0.80 (+1.47)
+         - acousticness 0.18 (+0.82)
+--------------------------------------------------
+
+  #2  Rooftop Lights by Indigo Parade
+       Score: 4.09 / 7.50
+       Reasons:
+         - mood is happy (exact match, +2.0)
+         - energy 0.76 vs target 0.80 (+1.44)
+         - acousticness 0.35 (+0.65)
+--------------------------------------------------
+
+==================================================
+  Profile: Contradictory (Acoustic Metal)
+==================================================
+
+  #1  Neon Requiem by Pale Circuit
+       Score: 6.56 / 7.50
+       Reasons:
+         - genre is metal (exact match, +3.0)
+         - mood is dark (exact match, +2.0)
+         - energy 0.95 vs target 0.95 (+1.50)
+         - acousticness 0.06 (+0.06)
+--------------------------------------------------
+
+  #2  Hometown Dust by Carter Ridge
+       Score: 1.61 / 7.50
+       Reasons:
+         - energy 0.47 vs target 0.95 (+0.78)
+         - acousticness 0.83 (+0.83)
+--------------------------------------------------
+
+==================================================
+  Profile: Extreme Low Energy Pop
+==================================================
+
+  #1  Sunrise City by Neon Echo
+       Score: 6.09 / 7.50
+       Reasons:
+         - genre is pop (exact match, +3.0)
+         - mood is happy (exact match, +2.0)
+         - energy 0.82 vs target 0.00 (+0.27)
+         - acousticness 0.18 (+0.82)
+--------------------------------------------------
+
+  #2  Gym Hero by Max Pulse
+       Score: 4.05 / 7.50
+       Reasons:
+         - genre is pop (exact match, +3.0)
+         - energy 0.93 vs target 0.00 (+0.10)
+         - acousticness 0.05 (+0.95)
+--------------------------------------------------
+```
+
+**Findings:**
+- **Ghost Genre:** No song earns genre points — the system falls back on mood/energy/acoustic, recommending songs that have nothing to do with k-pop
+- **Contradictory Preferences:** Genre+mood weight (5.0) dominates, so Neon Requiem wins despite only +0.06 acoustic — the system ignores the conflict
+- **Extreme Low Energy:** Genre+mood (5.0) overpower a wildly wrong energy match — Sunrise City (energy 0.82) still beats quiet songs closer to the 0.0 target
 
 ---
 
